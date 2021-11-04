@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<link rel="stylesheet" href="/css/styles.css">
+<meta charset="ISO-8859-1">
+<title>Welcome</title>
+</head>
+<body>
+
+
+<div class="bg-image"></div>
+<div class="bg-text">
+<div class="center">
+<h1>Metro System Welcomes You..</h1>
+<div th:unless="${#lists.isEmpty(card)}" id="parent">
+<h3 class="child"  th:text="'Logged Card Number is '+${card.cardId}"></h3>
+<p class ="child">&emsp;&emsp;&emsp;&emsp;</p>
+<a href="./logout" id="logout" class="child">Logout</a>
+</div>
+</div><br><br>
+<div class ="center1">
+<div  th:unless="${#lists.isEmpty(card)}">
+  <ul>
+  <li>
+  <form action="./details" method="post">
+<input type="hidden" name="cId" th:value="${card.cardId }">
+<input type="submit" value="Card Details" class="button">
+</form></li>
+&emsp;&emsp;
+  <li><form action="./swipe" method="post">
+<input type="hidden" name="cId" th:value="${card.cardId}">
+<input type="submit" value="SwipeIn/Out" class="button">
+</form></li>
+&emsp;&emsp;
+<li>
+<form action="./recharge" method="post">
+<input type="hidden" name="cId" th:value="${card.cardId }">
+<input type="submit" value="Recharge" class="button">
+</form>
+
+</li>
+&emsp;&emsp;
+  <li><form action="./history" method="post">
+<input type="hidden" name="cId" th:value="${card.cardId }">
+<input type="submit" value="History" class="button">
+</form></li>
+  
+</ul>
+
+
+<div id="ongoing">
+<div th:if="${msg==0}">
+<h3 th:text="'Your card number is '+${card.cardId }"></h3>
+<h3 th:text="'Card Holder name is '+${card.holderName }"></h3>
+<h3 th:text="'Available Balance is '+${card.balance }"></h3>
+<h3 th:text="'Created on '+${card.creationDate }"></h3>
+</div>
+<div th:if="${msg==-1}">
+<form action="./rechargeAmount" method="post">
+<div class="row">
+    <div class="col-25">
+    <label>
+Enter Your Amount</label>
+</div>
+ <div class="col-75">
+<input type="text" name="amount" placeholder="Your Amount.."><br><br>
+</div>
+</div>
+<input type="hidden" name="cardId" th:value="${card.cardId }">
+<input type="submit" value="Recharge" class="button1">
+
+</form>
+</div>
+<div th:if="${msg==-2}">
+<h3>Balance should be greater than 0</h3>
+</div>
+<div th:if="${msg>1}">
+<h3 th:text="'Final Amount after adding is '+${msg }"></h3>
+</div>
+<div th:unless="${#lists.isEmpty(swipeIn)}">
+<div th:if="${card.balance>20 }">
+<h3>Select Stations to SwipeIn</h3>
+<form action="/swipeIn">
+<input type="hidden" name ="cId" th:value="${card.cardId }">
+<select name="stations" id="stations">
+<div  th:each="station : ${swipeIn}">
+      <option th:value="${station.stationName }" th:text="${station.stationName }"></option>
+      </div>
+</select>
+  <input type="submit" value="SwipeIn" class ="button1">
+</form>
+</div>
+<div th:if="${card.balance<=20 }">
+<h3>No sufficient funds found, please recharge to continue.</h3>
+</div>
+</div>
+<div th:unless="${#lists.isEmpty(swipeOut)}">
+<div th:if="${card.balance>20 }">
+<h3>Select Stations to SwipeOut</h3>
+<form action="/swipeOut" method="post">
+<input type="hidden" name ="cId" th:value="${card.cardId }">
+<select name="stations" id="station">
+<div th:each="station : ${swipeOut}">
+      <option th:value="${station.stationName }"  th:text="${station.stationName }"></option>
+   </div>
+  </select>
+  <input type="submit" value="SwipeOut" class="button1">
+</form>
+</div>
+<div th:if="${card.balance<=20 }">
+<h3>No sufficient funds found, please recharge to continue.</h3>
+</div>
+</div>
+<div th:unless="${#lists.isEmpty(status)}">
+<h3 th:text="${status }"></h3>
+</div>
+<div th:unless="${#lists.isEmpty(transaction)}">
+<h3>Your travel details : </h3>
+<h3 th:text="'From L'+${transaction.station.stationId }+' : '+${transaction.swipeInTime }"></h3>
+<h3 th:text="'To L'+${transaction.destinationStationId }+' : '+${transaction.swipeOutTime }"></h3>
+<h3 th:text="'Your Total fare is '+${ transaction.fare}+' with penality of '+${transaction.penality}"></h3>
+<h3 th:text="'You have successfully Swiped Out with card balance as '+${card.balance }"></h3>
+</div>
+<div th:unless="${#lists.isEmpty(negative)}">
+<h3 th:text="'No sufficient funds found, add '+${negative }+' more to continue.'"></h3>
+</div>
+</div>
+<div th:unless="${#lists.isEmpty(transactions)}">
+<div th:if="${transactions==1}">
+<h3 id ="ongoing">No Records Found. </h3>
+</div>
+<div th:if="${transactions!=1}">
+<h3 id ="ongoing">Your travel details </h3>
+<table border="1" id ="table1">
+		<tr>
+			<th>From</th>
+			<th>To</th>
+			<th>Fare</th>
+			<th>Penality</th>
+		</tr>
+
+<tr th:each="transaction : ${transactions}">
+				
+				<td th:text=" 'L'+${transaction.station.stationId }+' : '+${transaction.swipeInTime }"></td>
+				<div th:if="${transaction.destinationStationId!=0 }">
+				<td th:text="'L'+${transaction.destinationStationId }+' : '+${transaction.swipeOutTime }"></td>
+				<td th:text="${ transaction.fare}"></td>
+				<td th:text="${transaction.penality}"></td>
+				</div>
+				<div th:if="${transaction.destinationStationId==0 }">
+				<td id="ongoing">Journey Ongoing</td>
+				<td id="ongoing">Pending</td>
+				<td id="ongoing">Pending</td>
+				</div>
+			</tr>
+
+</table>
+</div>
+</div>
+</div>
+<div th:if="${#lists.isEmpty(card)}">
+<h1 id ="ongoing" >404 Not Found</h1>
+</div>
+</div>
+</div>
+</body>
+</html>
